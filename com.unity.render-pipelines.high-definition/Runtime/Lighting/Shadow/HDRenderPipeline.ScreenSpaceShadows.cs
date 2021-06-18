@@ -459,7 +459,7 @@ namespace UnityEngine.Rendering.HighDefinition
             // We have screen space shadows that needs to be evaluated if we have one of these:
             // - A screen space directional shadow
             // - A ray traced directional shadow
-            bool screenSpaceShadowDirectionalRequired = m_CurrentSunLightAdditionalLightData != null && m_CurrentSunLightAdditionalLightData.WillRenderScreenSpaceShadow();
+            bool screenSpaceShadowDirectionalRequired = m_CurrentSunLightAdditionalLightData != null && (m_CurrentSunShadowMapFlags & HDVisibleLightEntities.ShadowMapFlags.WillRenderScreenSpaceShadow) != 0;
             // - A ray traced spot or point shadow
             // - A ray traced area light shadow
             bool pointOrAreaLightShadowRequired = false;

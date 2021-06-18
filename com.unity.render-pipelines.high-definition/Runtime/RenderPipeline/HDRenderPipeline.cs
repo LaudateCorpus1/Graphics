@@ -664,6 +664,7 @@ namespace UnityEngine.Rendering.HighDefinition
 
             base.Dispose(disposing);
 
+            HDLightEntityCollection.instance.Cleanup();
             ReleaseScreenSpaceShadows();
 
             if (m_RayTracingSupported)
@@ -1009,6 +1010,7 @@ namespace UnityEngine.Rendering.HighDefinition
             public CullingResults? customPassCullingResults;
             public HDProbeCullingResults hdProbeCullingResults;
             public DecalSystem.CullResult decalCullResults;
+            public HDVisibleLightEntities hdVisibleLightEntities;
             // TODO: DecalCullResults
 
             internal void Reset()
@@ -1018,6 +1020,11 @@ namespace UnityEngine.Rendering.HighDefinition
                     decalCullResults.Clear();
                 else
                     decalCullResults = GenericPool<DecalSystem.CullResult>.Get();
+
+                if (hdVisibleLightEntities != null)
+                    hdVisibleLightEntities.Reset();
+                else
+                    hdVisibleLightEntities = HDVisibleLightEntities.Get();
             }
         }
 
@@ -1083,6 +1090,8 @@ namespace UnityEngine.Rendering.HighDefinition
             }
 
             DecalSystem.instance.StartDecalUpdateJobs();
+
+            HDLightEntityCollection.instance.StartLightTransformDataJobs();
 
             // This function should be called once every render (once for all camera)
             LightLoopNewRender();
@@ -1303,6 +1312,7 @@ namespace UnityEngine.Rendering.HighDefinition
                         viewDependentProbesData = ListPool<(HDProbe.RenderData, HDProbe)>.Get()
                         // TODO: store DecalCullResult
                     };
+
                     renderRequests.Add(request);
                     // This is a root render request
                     rootRenderRequestIndices.Add(request.index);
@@ -1921,6 +1931,7 @@ namespace UnityEngine.Rendering.HighDefinition
             var hdCamera = renderRequest.hdCamera;
             var camera = hdCamera.camera;
             var cullingResults = renderRequest.cullingResults.cullingResults;
+            var hdVisibleLightEntities = renderRequest.cullingResults.hdVisibleLightEntities;
             var customPassCullingResults = renderRequest.cullingResults.customPassCullingResults ?? cullingResults;
             var hdProbeCullingResults = renderRequest.cullingResults.hdProbeCullingResults;
             var decalCullingResults = renderRequest.cullingResults.decalCullResults;
@@ -2016,7 +2027,7 @@ namespace UnityEngine.Rendering.HighDefinition
                 // Currently to know if you need shadow mask you need to go through all visible lights (of CullResult), check the LightBakingOutput struct and look at lightmapBakeType/mixedLightingMode. If one light have shadow mask bake mode, then you need shadow mask features (i.e extra Gbuffer).
                 // It mean that when we build a standalone player, if we detect a light with bake shadow mask, we generate all shader variant (with and without shadow mask) and at runtime, when a bake shadow mask light is visible, we dynamically allocate an extra GBuffer and switch the shader.
                 // So the first thing to do is to go through all the light: PrepareLightsForGPU
-                bool enableBakeShadowMask = PrepareLightsForGPU(cmd, hdCamera, cullingResults, hdProbeCullingResults, localVolumetricFog, m_CurrentDebugDisplaySettings, aovRequest);
+                bool enableBakeShadowMask = PrepareLightsForGPU(cmd, hdCamera, hdVisibleLightEntities, cullingResults, hdProbeCullingResults, localVolumetricFog, m_CurrentDebugDisplaySettings, aovRequest);
 
                 UpdateGlobalConstantBuffers(hdCamera, cmd);
 
