@@ -12,7 +12,7 @@ namespace UnityEngine.Rendering.HighDefinition
     {
         public int entityIndex;
         public static readonly HDLightEntity Invalid = new HDLightEntity() { entityIndex = -1 };
-        public bool valid { get { return entityIndex != -1;  } }
+        public bool valid { get { return entityIndex != -1; } }
     }
 
     internal struct HDLightEntityData
@@ -20,7 +20,7 @@ namespace UnityEngine.Rendering.HighDefinition
         public int dataIndex;
         public int lightInstanceID;
         public static readonly HDLightEntityData Invalid = new HDLightEntityData() { dataIndex = -1, lightInstanceID = -1 };
-        public bool valid { get { return dataIndex != -1 && lightInstanceID != -1;  } }
+        public bool valid { get { return dataIndex != -1 && lightInstanceID != -1; } }
     }
 
     //Internal class with SoA for a pool of lights
@@ -51,27 +51,27 @@ namespace UnityEngine.Rendering.HighDefinition
         private GameObject[] m_AOVGameObjects = null;
 
         //TODO: Hack array just used for shadow allocation. Need to refactor this so we dont depend on hdAdditionalData
-        private HDAdditionalLightData[]                    m_HDAdditionalLightData = null;
-        private TransformAccessArray                       m_LightTransforms;
-        private NativeArray<HDLightEntity>                 m_OwnerEntity;
-        private NativeArray<float3>                        m_LightPositions;
+        private HDAdditionalLightData[] m_HDAdditionalLightData = null;
+        private TransformAccessArray m_LightTransforms;
+        private NativeArray<HDLightEntity> m_OwnerEntity;
+        private NativeArray<float3> m_LightPositions;
         private NativeArray<HDAdditionalLightData.PointLightHDType> m_PointLightType;
-        private NativeArray<SpotLightShape>                m_SpotLightShape;
-        private NativeArray<AreaLightShape>                m_AreaLightShape;
-        private NativeArray<LightLayerEnum>                m_LightLayers;
-        private NativeArray<float>                         m_FadeDistances;
-        private NativeArray<float>                         m_VolumetricFadeDistances;
-        private NativeArray<bool>                          m_IncludeForRayTracings;
-        private NativeArray<bool>                          m_UseScreenSpaceShadows;
-        private NativeArray<bool>                          m_UseRayTracedShadows;
-        private NativeArray<bool>                          m_ColorShadow;
-        private NativeArray<float>                         m_LightDimmer;
-        private NativeArray<float>                         m_VolumetricDimmer;
-        private NativeArray<float>                         m_ShadowDimmer;
-        private NativeArray<float>                         m_ShadowFadeDistance;
-        private NativeArray<float>                         m_VolumetricShadowDimmer;
-        private NativeArray<bool>                          m_AffectDiffuse;
-        private NativeArray<bool>                          m_AffectSpecular;
+        private NativeArray<SpotLightShape> m_SpotLightShape;
+        private NativeArray<AreaLightShape> m_AreaLightShape;
+        private NativeArray<LightLayerEnum> m_LightLayers;
+        private NativeArray<float> m_FadeDistances;
+        private NativeArray<float> m_VolumetricFadeDistances;
+        private NativeArray<bool> m_IncludeForRayTracings;
+        private NativeArray<bool> m_UseScreenSpaceShadows;
+        private NativeArray<bool> m_UseRayTracedShadows;
+        private NativeArray<bool> m_ColorShadow;
+        private NativeArray<float> m_LightDimmer;
+        private NativeArray<float> m_VolumetricDimmer;
+        private NativeArray<float> m_ShadowDimmer;
+        private NativeArray<float> m_ShadowFadeDistance;
+        private NativeArray<float> m_VolumetricShadowDimmer;
+        private NativeArray<bool> m_AffectDiffuse;
+        private NativeArray<bool> m_AffectSpecular;
 
         private void ResizeArrays()
         {
@@ -192,10 +192,10 @@ namespace UnityEngine.Rendering.HighDefinition
         public NativeArray<LightLayerEnum> lightLayers => m_LightLayers;
         public NativeArray<float> fadeDistances => m_FadeDistances;
         public NativeArray<float> volumetricFadeDistances => m_VolumetricFadeDistances;
-        public NativeArray<bool>  includeForRayTracings => m_IncludeForRayTracings;
-        public NativeArray<bool>  useScreenSpaceShadows => m_UseScreenSpaceShadows;
-        public NativeArray<bool>  useRayTracedShadows => m_UseRayTracedShadows;
-        public NativeArray<bool>  colorShadow => m_ColorShadow;
+        public NativeArray<bool> includeForRayTracings => m_IncludeForRayTracings;
+        public NativeArray<bool> useScreenSpaceShadows => m_UseScreenSpaceShadows;
+        public NativeArray<bool> useRayTracedShadows => m_UseRayTracedShadows;
+        public NativeArray<bool> colorShadow => m_ColorShadow;
         public NativeArray<float> lightDimmer => m_LightDimmer;
         public NativeArray<float> volumetricDimmer => m_VolumetricDimmer;
         public NativeArray<float> shadowDimmer => m_ShadowDimmer;

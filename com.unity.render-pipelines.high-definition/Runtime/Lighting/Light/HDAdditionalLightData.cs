@@ -3465,7 +3465,7 @@ namespace UnityEngine.Rendering.HighDefinition
             lightEntities.UpdateHDAdditionalLightData(lightEntity, this);//TODO: only added for shadow calculations. To be removed at some point.
             lightEntities.UpdateAOVGameObject(lightEntity, legacyLight.gameObject);
             lightEntities.UpdatePointLightType(lightEntity, m_PointlightHDType);
-            lightEntities.UpdateSpotLightShape(lightEntity,  m_SpotLightShape);
+            lightEntities.UpdateSpotLightShape(lightEntity, m_SpotLightShape);
             lightEntities.UpdateAreaLightShape(lightEntity, m_AreaLightShape);
             lightEntities.UpdateLightLayer(lightEntity, m_LightLayers);
             lightEntities.UpdateFadeDistance(lightEntity, m_FadeDistance);

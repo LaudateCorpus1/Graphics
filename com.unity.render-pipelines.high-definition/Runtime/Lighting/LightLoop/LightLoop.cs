@@ -1134,7 +1134,7 @@ namespace UnityEngine.Rendering.HighDefinition
             lightData.color *= (HDUtils.s_DefaultHDAdditionalLightData == additionalLightData) ? Mathf.PI : 1.0f;
 
             lightData.lightDimmer = lightEntities.lightDimmer[processedLightEntity.dataIndex];
-            lightData.diffuseDimmer = lightEntities.affectDiffuse[processedLightEntity.dataIndex]  ? lightData.lightDimmer : 0;
+            lightData.diffuseDimmer = lightEntities.affectDiffuse[processedLightEntity.dataIndex] ? lightData.lightDimmer : 0;
             lightData.specularDimmer = lightEntities.affectSpecular[processedLightEntity.dataIndex] ? lightData.lightDimmer * hdCamera.frameSettings.specularGlobalDimmer : 0;
             lightData.volumetricLightDimmer = lightEntities.volumetricDimmer[processedLightEntity.dataIndex];
 
@@ -1445,7 +1445,7 @@ namespace UnityEngine.Rendering.HighDefinition
             var lightDimmer = lightEntities.lightDimmer[processedLightEntity.dataIndex];
             var volumetricDimmer = lightEntities.volumetricDimmer[processedLightEntity.dataIndex];
             lightData.lightDimmer = lightDistanceFade * lightDimmer;
-            lightData.diffuseDimmer = lightDistanceFade * (lightEntities.affectDiffuse[processedLightEntity.dataIndex]  ? lightDimmer : 0);
+            lightData.diffuseDimmer = lightDistanceFade * (lightEntities.affectDiffuse[processedLightEntity.dataIndex] ? lightDimmer : 0);
             lightData.specularDimmer = lightDistanceFade * (lightEntities.affectSpecular[processedLightEntity.dataIndex] ? lightDimmer * hdCamera.frameSettings.specularGlobalDimmer : 0);
             lightData.volumetricLightDimmer = Mathf.Min(lightVolumetricDistanceFade, lightDistanceFade) * volumetricDimmer;
 
@@ -2210,9 +2210,9 @@ namespace UnityEngine.Rendering.HighDefinition
                     var lightEntities = HDLightEntityCollection.instance;
                     for (int i = 0; i < visibleLightCounts; ++i)
                     {
-                        int lightIndex = (int)(visibleLightEntities.sortKeys[i] & 0xFFFF);                        
+                        int lightIndex = (int)(visibleLightEntities.sortKeys[i] & 0xFFFF);
                         HDVisibleLightEntities.ProcessedVisibleLightEntity processedLightEntity = visibleLightEntities.processedEntities[lightIndex];
-                        HDAdditionalLightData additionalLightData = lightEntities.hdAdditionalLightData[processedLightEntity.dataIndex];                 
+                        HDAdditionalLightData additionalLightData = lightEntities.hdAdditionalLightData[processedLightEntity.dataIndex];
                         if (processedLightEntity.gpuLightType == GPULightType.Directional)
                         {
                             // Sunlight is the directional casting shadows

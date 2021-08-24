@@ -10,9 +10,9 @@ namespace UnityEngine.Rendering.HighDefinition
     {
         JobHandle m_CreateGpuLightDataJobHandle;
 
-//#if ENABLE_BURST_1_5_0_OR_NEWER
-//        [Unity.Burst.BurstCompile]
-//#endif
+        //#if ENABLE_BURST_1_5_0_OR_NEWER
+        //        [Unity.Burst.BurstCompile]
+        //#endif
         struct CreateGpuLightDataJob : IJobParallelFor
         {
             public void Execute(int index)
@@ -22,7 +22,7 @@ namespace UnityEngine.Rendering.HighDefinition
 
         public void StartCreateGpuLightDataJob(HDVisibleLightEntities visibleLights, HDLightEntityCollection lightEntities)
         {
-            var createGpuLightDataJob =  new CreateGpuLightDataJob()
+            var createGpuLightDataJob = new CreateGpuLightDataJob()
             {
             };
 

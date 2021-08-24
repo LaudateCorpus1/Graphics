@@ -96,13 +96,13 @@ namespace UnityEngine.Rendering.HighDefinition
             [WriteOnly]
             public NativeArray<LightVolumeType> processedLightVolumeType;
             [WriteOnly]
-            public NativeArray<ProcessedVisibleLightEntity>  processedEntities;
+            public NativeArray<ProcessedVisibleLightEntity> processedEntities;
             [WriteOnly]
             [NativeDisableContainerSafetyRestriction]
-            public NativeArray<uint>   sortKeys;
+            public NativeArray<uint> sortKeys;
             [WriteOnly]
             [NativeDisableContainerSafetyRestriction]
-            public NativeArray<int>   shadowLightsDataIndices;
+            public NativeArray<int> shadowLightsDataIndices;
             #endregion
 
             private bool TrivialRejectLight(in VisibleLight light, in HDLightEntityData lightEntity)
@@ -342,7 +342,7 @@ namespace UnityEngine.Rendering.HighDefinition
             {
                 //Parameters.
                 cameraPosition = hdCamera.camera.transform.position,
-                pixelCount     = hdCamera.actualWidth * hdCamera.actualHeight,
+                pixelCount = hdCamera.actualWidth * hdCamera.actualHeight,
                 enableAreaLights = ShaderConfig.s_AreaLights != 0,
                 enableRayTracing = hdCamera.frameSettings.IsEnabled(FrameSettingsField.RayTracing),
                 showDirectionalLight = debugDisplaySettings.data.lightingDebugSettings.showDirectionalLight,
@@ -356,11 +356,11 @@ namespace UnityEngine.Rendering.HighDefinition
                 debugFilterMode = debugDisplaySettings.GetDebugLightFilterMode(),
 
                 //SoA of all light entities.
-                lightPositions  = lightEntityCollection.lightPositions,
+                lightPositions = lightEntityCollection.lightPositions,
                 pointLightTypes = lightEntityCollection.pointLightTypes,
                 spotLightShapes = lightEntityCollection.spotLightShapes,
                 areaLightShapes = lightEntityCollection.areaLightShapes,
-                fadeDistances   = lightEntityCollection.fadeDistances,
+                fadeDistances = lightEntityCollection.fadeDistances,
                 volumetricFadeDistances = lightEntityCollection.volumetricFadeDistances,
                 includeForRayTracings = lightEntityCollection.includeForRayTracings,
                 useScreenSpaceShadows = lightEntityCollection.useScreenSpaceShadows,
@@ -373,7 +373,7 @@ namespace UnityEngine.Rendering.HighDefinition
                 affectSpecular = lightEntityCollection.affectSpecular,
 
                 //SoA of all visible light entities.
-                visibleLights   = visibleLights,
+                visibleLights = visibleLights,
                 visibleEntities = m_VisibleEntities,
                 visibleLightBakingOutput = m_VisibleLightBakingOutput,
                 visibleLightShadows = m_VisibleLightShadows,
@@ -382,8 +382,8 @@ namespace UnityEngine.Rendering.HighDefinition
                 processedVisibleLightCountsPtr = m_ProcessVisibleLightCounts,
                 processedLightVolumeType = m_ProcessedLightVolumeType,
                 processedEntities = m_ProcessedEntities,
-                sortKeys                       = m_SortKeys,
-                shadowLightsDataIndices        = m_ShadowLightsDataIndices
+                sortKeys = m_SortKeys,
+                shadowLightsDataIndices = m_ShadowLightsDataIndices
             };
 
             m_ProcessVisibleLightJobHandle = processVisibleLightJob.Schedule(m_Size, 32);

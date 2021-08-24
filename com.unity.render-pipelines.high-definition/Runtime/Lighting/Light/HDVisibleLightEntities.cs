@@ -49,24 +49,24 @@ namespace UnityEngine.Rendering.HighDefinition
         #region visible lights SoA
         NativeArray<HDLightEntityData> m_VisibleEntities;
         NativeArray<LightBakingOutput> m_VisibleLightBakingOutput;
-        NativeArray<LightShadows>      m_VisibleLightShadows;
-        NativeArray<LightVolumeType>   m_ProcessedLightVolumeType;
+        NativeArray<LightShadows> m_VisibleLightShadows;
+        NativeArray<LightVolumeType> m_ProcessedLightVolumeType;
         NativeArray<ProcessedVisibleLightEntity> m_ProcessedEntities;
         #endregion
 
         #region ProcessedLight data SoA
-        NativeArray<uint>            m_SortKeys;
-        NativeArray<uint>            m_SortSupportArray;
-        NativeArray<int>             m_ShadowLightsDataIndices;
+        NativeArray<uint> m_SortKeys;
+        NativeArray<uint> m_SortSupportArray;
+        NativeArray<int> m_ShadowLightsDataIndices;
 
         public int preprocessedLightCounts => m_ProcessVisibleLightCounts.IsCreated ? m_ProcessVisibleLightCounts[(int)ProcessLightsCountSlots.ProcessedLights] : 0;
 
         public NativeArray<HDLightEntityData> visibleEntities => m_VisibleEntities;
         public NativeArray<LightVolumeType> processedLightVolumeType => m_ProcessedLightVolumeType;
         public NativeArray<ProcessedVisibleLightEntity> processedEntities => m_ProcessedEntities;
-        public NativeArray<uint>            sortKeys => m_SortKeys;
-        public NativeArray<uint>            sortSupportArray => m_SortSupportArray;
-        public NativeArray<int>             shadowLightsDataIndices => m_ShadowLightsDataIndices;
+        public NativeArray<uint> sortKeys => m_SortKeys;
+        public NativeArray<uint> sortSupportArray => m_SortSupportArray;
+        public NativeArray<int> shadowLightsDataIndices => m_ShadowLightsDataIndices;
 
         private void ResizeArrays(int newCapacity)
         {
@@ -236,7 +236,7 @@ namespace UnityEngine.Rendering.HighDefinition
                 NativeArray<VisibleLight> visibleLights = cullResults.visibleLights;
                 var hdShadowSettings = hdCamera.volumeStack.GetComponent<HDShadowSettings>();
 
-                unsafe 
+                unsafe
                 {
                     ProcessedVisibleLightEntity* entitiesPtr = (ProcessedVisibleLightEntity*)m_ProcessedEntities.GetUnsafePtr<ProcessedVisibleLightEntity>();
                     for (int i = 0; i < shadowLights; ++i)
