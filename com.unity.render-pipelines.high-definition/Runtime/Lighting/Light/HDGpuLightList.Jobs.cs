@@ -15,6 +15,19 @@ namespace UnityEngine.Rendering.HighDefinition
         //#endif
         struct CreateGpuLightDataJob : IJobParallelFor
         {
+            #region Parameters
+            #endregion
+
+            #region Light entity SoA data
+            #endregion
+
+            #region output processed lights
+            [WriteOnly]
+            NativeArray<LightData> lights;
+            [WriteOnly]
+            NativeArray<DirectionalLightData> directionalLights;
+            #endregion
+
             public void Execute(int index)
             {
             }
