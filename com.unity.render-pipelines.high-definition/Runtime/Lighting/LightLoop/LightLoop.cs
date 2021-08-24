@@ -522,6 +522,8 @@ namespace UnityEngine.Rendering.HighDefinition
         }
 
         internal LightList m_lightList;
+        internal HDGpuLightList m_GpuLightList;
+
         int m_TotalLightCount = 0;
         int m_LocalVolumetricFogCount = 0;
         bool m_EnableBakeShadowMask = false; // Track if any light require shadow mask. In this case we will need to enable the keyword shadow mask
@@ -738,6 +740,8 @@ namespace UnityEngine.Rendering.HighDefinition
             m_lightList = new LightList();
             m_lightList.Allocate();
 
+            m_GpuLightList = new HDGpuLightList();
+
             m_MaxDirectionalLightsOnScreen = lightLoopSettings.maxDirectionalLightsOnScreen;
             m_MaxPunctualLightsOnScreen = lightLoopSettings.maxPunctualLightsOnScreen;
             m_MaxAreaLightsOnScreen = lightLoopSettings.maxAreaLightsOnScreen;
@@ -907,6 +911,8 @@ namespace UnityEngine.Rendering.HighDefinition
             CoreUtils.Destroy(s_DeferredTileRegularLightingMat);
             CoreUtils.Destroy(s_DeferredTileSplitLightingMat);
             CoreUtils.Destroy(s_DeferredTileMat);
+
+            m_GpuLightList.Cleanup();
         }
 
         void LightLoopNewRender()

@@ -92,37 +92,10 @@ namespace UnityEngine.Rendering.HighDefinition
 
             #region output processed lights
             [WriteOnly]
-            [NativeDisableContainerSafetyRestriction]
             public NativeArray<int> processedVisibleLightCountsPtr;
             [WriteOnly]
-            [NativeDisableContainerSafetyRestriction]
-            public NativeArray<HDLightType>     processedLightTypes;
-            [WriteOnly]
-            [NativeDisableContainerSafetyRestriction]
-            public NativeArray<LightCategory>   processedLightCategories;
-            [WriteOnly]
-            [NativeDisableContainerSafetyRestriction]
-            public NativeArray<GPULightType>    processedGPULightType;
-            [WriteOnly]
-            [NativeDisableContainerSafetyRestriction]
             public NativeArray<LightVolumeType> processedLightVolumeType;
             [WriteOnly]
-            [NativeDisableContainerSafetyRestriction]
-            public NativeArray<float> processedLightDistanceToCamera;
-            [WriteOnly]
-            [NativeDisableContainerSafetyRestriction]
-            public NativeArray<float> processedLightDistanceFade;
-            [WriteOnly]
-            [NativeDisableContainerSafetyRestriction]
-            public NativeArray<float> processedLightVolumetricDistanceFade;
-            [WriteOnly]
-            [NativeDisableContainerSafetyRestriction]
-            public NativeArray<bool>  processedLightIsBakedShadowMask;
-            [WriteOnly]
-            [NativeDisableContainerSafetyRestriction]
-            public NativeArray<HDVisibleLightEntities.ShadowMapFlags>  processedShadowMapFlags;
-            [WriteOnly]
-            [NativeDisableContainerSafetyRestriction]
             public NativeArray<ProcessedVisibleLightEntity>  processedEntities;
             [WriteOnly]
             [NativeDisableContainerSafetyRestriction]
@@ -418,6 +391,9 @@ namespace UnityEngine.Rendering.HighDefinition
 
         public void CompleteProcessVisibleLightJob()
         {
+            if (m_Size == 0)
+                return;
+
             m_ProcessVisibleLightJobHandle.Complete();
         }
     }
