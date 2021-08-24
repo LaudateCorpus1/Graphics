@@ -197,6 +197,7 @@ namespace UnityEngine.Rendering.HighDefinition
 
                 m_InnerSpotPercent = Mathf.Clamp(value, k_MinSpotInnerPercent, k_MaxSpotInnerPercent);
                 UpdateLightIntensity();
+                HDLightEntityCollection.instance.UpdateInnerSpotPercent(lightEntity, m_InnerSpotPercent);
             }
         }
 
@@ -221,6 +222,7 @@ namespace UnityEngine.Rendering.HighDefinition
                     return;
 
                 m_SpotIESCutoffPercent = Mathf.Clamp(value, k_MinSpotInnerPercent, k_MaxSpotInnerPercent);
+                HDLightEntityCollection.instance.UpdateSpotIESCutoffPercent(lightEntity, m_SpotIESCutoffPercent);
             }
         }
 
@@ -406,6 +408,7 @@ namespace UnityEngine.Rendering.HighDefinition
                 else
                     m_ShapeWidth = Mathf.Clamp(value, 0, float.MaxValue);
                 UpdateAllLightValues();
+                HDLightEntityCollection.instance.UpdateShapeWidth(lightEntity, m_ShapeWidth);
             }
         }
 
@@ -428,6 +431,7 @@ namespace UnityEngine.Rendering.HighDefinition
                 else
                     m_ShapeHeight = Mathf.Clamp(value, 0, float.MaxValue);
                 UpdateAllLightValues();
+                HDLightEntityCollection.instance.UpdateShapeHeight(lightEntity, m_ShapeHeight);
             }
         }
 
@@ -447,6 +451,7 @@ namespace UnityEngine.Rendering.HighDefinition
 
                 m_AspectRatio = Mathf.Clamp(value, k_MinAspectRatio, k_MaxAspectRatio);
                 UpdateAllLightValues();
+                HDLightEntityCollection.instance.UpdateAspectRatio(lightEntity, m_AspectRatio);
             }
         }
 
@@ -466,6 +471,7 @@ namespace UnityEngine.Rendering.HighDefinition
 
                 m_ShapeRadius = Mathf.Clamp(value, 0, float.MaxValue);
                 UpdateAllLightValues();
+                HDLightEntityCollection.instance.UpdateShapeRadius(lightEntity, m_ShapeRadius);
             }
         }
 
@@ -560,6 +566,7 @@ namespace UnityEngine.Rendering.HighDefinition
 
                 m_ApplyRangeAttenuation = value;
                 UpdateAllLightValues();
+                HDLightEntityCollection.instance.UpdateApplyRangeAttenuation(lightEntity, m_ApplyRangeAttenuation);
             }
         }
 
@@ -1394,6 +1401,7 @@ namespace UnityEngine.Rendering.HighDefinition
                     return;
 
                 m_ShadowTint = value;
+                HDLightEntityCollection.instance.UpdateShadowTint(lightEntity, m_ShadowTint);
             }
         }
 
@@ -1570,6 +1578,7 @@ namespace UnityEngine.Rendering.HighDefinition
 
                 m_BarnDoorAngle = Mathf.Clamp(value, 0.0f, 90.0f);
                 UpdateAllLightValues();
+                HDLightEntityCollection.instance.UpdateBarnDoorAngle(lightEntity, m_BarnDoorAngle);
             }
         }
 
@@ -1589,6 +1598,7 @@ namespace UnityEngine.Rendering.HighDefinition
 
                 m_BarnDoorLength = Mathf.Clamp(value, 0.0f, float.MaxValue);
                 UpdateAllLightValues();
+                HDLightEntityCollection.instance.UpdateBarnDoorLength(lightEntity, m_BarnDoorLength);
             }
         }
 
@@ -3479,8 +3489,18 @@ namespace UnityEngine.Rendering.HighDefinition
             lightEntities.UpdateShadowDimmer(lightEntity, m_ShadowDimmer);
             lightEntities.UpdateShadowFadeDistance(lightEntity, m_ShadowFadeDistance);
             lightEntities.UpdateVolumetricShadowDimmer(lightEntity, m_VolumetricShadowDimmer);
+            lightEntities.UpdateShapeWidth(lightEntity, m_ShapeWidth);
+            lightEntities.UpdateShapeHeight(lightEntity, m_ShapeHeight);
+            lightEntities.UpdateAspectRatio(lightEntity, m_AspectRatio);
+            lightEntities.UpdateInnerSpotPercent(lightEntity, m_InnerSpotPercent);
+            lightEntities.UpdateSpotIESCutoffPercent(lightEntity, m_SpotIESCutoffPercent);
+            lightEntities.UpdateShapeRadius(lightEntity, m_ShapeRadius);
+            lightEntities.UpdateBarnDoorLength(lightEntity, m_BarnDoorLength);
+            lightEntities.UpdateBarnDoorAngle(lightEntity, m_BarnDoorAngle);
             lightEntities.UpdateAffectDiffuse(lightEntity, m_AffectDiffuse);
             lightEntities.UpdateAffectSpecular(lightEntity, m_AffectSpecular);
+            lightEntities.UpdateApplyRangeAttenuation(lightEntity, m_ApplyRangeAttenuation);
+            lightEntities.UpdateShadowTint(lightEntity, m_ShadowTint);
         }
 
         void OnEnable()

@@ -8,6 +8,7 @@ namespace UnityEngine.Rendering.HighDefinition
     internal partial class HDGpuLightList
     {
         private NativeArray<LightData> m_Lights;
+        private NativeArray<Vector3> m_LightDimensions;
         private int m_LightCapacity = 0;
         private int m_LightCount = 0;
 
@@ -17,6 +18,8 @@ namespace UnityEngine.Rendering.HighDefinition
 
         public const int ArrayCapacity = 100;
         NativeArray<LightData> lights => m_Lights;
+        NativeArray<Vector3>   lightDimensions => m_LightDimensions;
+
         NativeArray<DirectionalLightData> directionalLights => m_DirectionalLights;
 
         private void Allocate(int lightCount, int directionalLightCount)
@@ -25,6 +28,7 @@ namespace UnityEngine.Rendering.HighDefinition
             {
                 m_LightCapacity = Math.Max(Math.Max(m_LightCapacity * 2, lightCount), ArrayCapacity);
                 m_Lights.ResizeArray(m_LightCapacity);
+                m_LightDimensions.ResizeArray(m_LightCapacity);
             }
 
             if (directionalLightCount > m_DirectionalLightCapacity)
@@ -36,9 +40,13 @@ namespace UnityEngine.Rendering.HighDefinition
             m_LightCount = lightCount;
         }
 
-        public void BuildLightGPUData(HDVisibleLightEntities visibleLights, HDLightEntityCollection lightEntities)
+        public void BuildLightGPUData(
+            HDCamera hdCamera,
+            in CullingResults cullingResult,
+            HDVisibleLightEntities visibleLights,
+            HDLightEntityCollection lightEntities)
         {
-            StartCreateGpuLightDataJob(visibleLights, lightEntities);
+            StartCreateGpuLightDataJob(hdCamera, cullingResult, visibleLights, lightEntities);
             CompleteGpuLightDataJob();
         }
 
@@ -46,6 +54,9 @@ namespace UnityEngine.Rendering.HighDefinition
         {
             if (m_Lights.IsCreated)
                 m_Lights.Dispose();
+
+            if (m_LightDimensions.IsCreated)
+                m_LightDimensions.Dispose();
 
             if (m_DirectionalLights.IsCreated)
                 m_DirectionalLights.Dispose();

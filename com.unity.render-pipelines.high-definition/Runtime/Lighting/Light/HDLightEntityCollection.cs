@@ -70,8 +70,18 @@ namespace UnityEngine.Rendering.HighDefinition
         private NativeArray<float> m_ShadowDimmer;
         private NativeArray<float> m_ShadowFadeDistance;
         private NativeArray<float> m_VolumetricShadowDimmer;
+        private NativeArray<float> m_ShapeWidth;
+        private NativeArray<float> m_ShapeHeight;
+        private NativeArray<float> m_AspectRatio;
+        private NativeArray<float> m_InnerSpotPercent;
+        private NativeArray<float> m_SpotIESCutoffPercent;
+        private NativeArray<float> m_ShapeRadius;
+        private NativeArray<float> m_BarnDoorLength;
+        private NativeArray<float> m_BarnDoorAngle;
         private NativeArray<bool> m_AffectDiffuse;
         private NativeArray<bool> m_AffectSpecular;
+        private NativeArray<bool> m_ApplyRangeAttenuation;
+        private NativeArray<Color> m_ShadowTint;
 
         private void ResizeArrays()
         {
@@ -107,8 +117,18 @@ namespace UnityEngine.Rendering.HighDefinition
             m_ShadowDimmer.ResizeArray(m_Capacity);
             m_ShadowFadeDistance.ResizeArray(m_Capacity);
             m_VolumetricShadowDimmer.ResizeArray(m_Capacity);
+            m_ShapeWidth.ResizeArray(m_Capacity);
+            m_ShapeHeight.ResizeArray(m_Capacity);
+            m_AspectRatio.ResizeArray(m_Capacity);
+            m_InnerSpotPercent.ResizeArray(m_Capacity);
+            m_SpotIESCutoffPercent.ResizeArray(m_Capacity);
+            m_ShapeRadius.ResizeArray(m_Capacity);
+            m_BarnDoorLength.ResizeArray(m_Capacity);
+            m_BarnDoorAngle.ResizeArray(m_Capacity);
             m_AffectDiffuse.ResizeArray(m_Capacity);
             m_AffectSpecular.ResizeArray(m_Capacity);
+            m_ApplyRangeAttenuation.ResizeArray(m_Capacity);
+            m_ShadowTint.ResizeArray(m_Capacity);
         }
 
         private void RemoveAtSwapBackArrays(int removeIndexAt)
@@ -138,8 +158,18 @@ namespace UnityEngine.Rendering.HighDefinition
             m_ShadowDimmer[removeIndexAt] = m_ShadowDimmer[lastIndex];
             m_ShadowFadeDistance[removeIndexAt] = m_ShadowFadeDistance[lastIndex];
             m_VolumetricShadowDimmer[removeIndexAt] = m_VolumetricShadowDimmer[lastIndex];
+            m_ShapeWidth[removeIndexAt] = m_ShapeWidth[lastIndex];
+            m_ShapeHeight[removeIndexAt] = m_ShapeHeight[lastIndex];
+            m_AspectRatio[removeIndexAt] = m_AspectRatio[lastIndex];
+            m_InnerSpotPercent[removeIndexAt] = m_InnerSpotPercent[lastIndex];
+            m_SpotIESCutoffPercent[removeIndexAt] = m_SpotIESCutoffPercent[lastIndex];
+            m_ShapeRadius[removeIndexAt] = m_ShapeRadius[lastIndex];
+            m_BarnDoorLength[removeIndexAt] = m_BarnDoorLength[lastIndex];
+            m_BarnDoorAngle[removeIndexAt] = m_BarnDoorAngle[lastIndex];
             m_AffectDiffuse[removeIndexAt] = m_AffectDiffuse[lastIndex];
             m_AffectSpecular[removeIndexAt] = m_AffectSpecular[lastIndex];
+            m_ApplyRangeAttenuation[removeIndexAt] = m_ApplyRangeAttenuation[lastIndex];
+            m_ShadowTint[removeIndexAt] = m_ShadowTint[lastIndex];
 
             --m_LightCount;
             Assert.AreEqual(m_LightTransforms.length, m_LightCount, "Inconsistent sizes of internal SoAs for lights");
@@ -170,8 +200,18 @@ namespace UnityEngine.Rendering.HighDefinition
             m_ShadowDimmer.Dispose();
             m_ShadowFadeDistance.Dispose();
             m_VolumetricShadowDimmer.Dispose();
+            m_ShapeWidth.Dispose();
+            m_ShapeHeight.Dispose();
+            m_AspectRatio.Dispose();
+            m_InnerSpotPercent.Dispose();
+            m_SpotIESCutoffPercent.Dispose();
+            m_ShapeRadius.Dispose();
+            m_BarnDoorLength.Dispose();
+            m_BarnDoorAngle.Dispose();
             m_AffectDiffuse.Dispose();
             m_AffectSpecular.Dispose();
+            m_ApplyRangeAttenuation.Dispose();
+            m_ShadowTint.Dispose();
 
             m_FreeIndices.Clear();
             m_LightEntities.Clear();
@@ -201,8 +241,18 @@ namespace UnityEngine.Rendering.HighDefinition
         public NativeArray<float> shadowDimmer => m_ShadowDimmer;
         public NativeArray<float> shadowFadeDistance => m_ShadowFadeDistance;
         public NativeArray<float> volumetricShadowDimmer => m_VolumetricShadowDimmer;
+        public NativeArray<float> shapeWidth => m_ShapeWidth;
+        public NativeArray<float> shapeHeight => m_ShapeHeight;
+        public NativeArray<float> aspectRatio => m_AspectRatio;
+        public NativeArray<float> innerSpotPercent => m_InnerSpotPercent;
+        public NativeArray<float> spotIESCutoffPercent => m_SpotIESCutoffPercent;
+        public NativeArray<float> shapeRadius => m_ShapeRadius;
+        public NativeArray<float> barnDoorLength => m_BarnDoorLength;
+        public NativeArray<float> barnDoorAngle => m_BarnDoorAngle;
         public NativeArray<bool> affectDiffuse => m_AffectDiffuse;
         public NativeArray<bool> affectSpecular => m_AffectSpecular;
+        public NativeArray<bool> applyRangeAttenuation => m_ApplyRangeAttenuation;
+        public NativeArray<Color> shadowTint => m_ShadowTint;
 
         public void UpdateHDAdditionalLightData(in HDLightEntity entity, HDAdditionalLightData val) { m_HDAdditionalLightData[m_LightEntities[entity.entityIndex].dataIndex] = val; }
         public void UpdateAOVGameObject(in HDLightEntity entity, GameObject val) { m_AOVGameObjects[m_LightEntities[entity.entityIndex].dataIndex] = val; }
@@ -219,10 +269,20 @@ namespace UnityEngine.Rendering.HighDefinition
         public void UpdateLightDimmer(in HDLightEntity entity, float val) { m_LightDimmer[m_LightEntities[entity.entityIndex].dataIndex] = val; }
         public void UpdateVolumetricDimmer(in HDLightEntity entity, float val) { m_VolumetricDimmer[m_LightEntities[entity.entityIndex].dataIndex] = val; }
         public void UpdateShadowDimmer(in HDLightEntity entity, float val) { m_ShadowDimmer[m_LightEntities[entity.entityIndex].dataIndex] = val; }
+        public void UpdateShapeWidth(in HDLightEntity entity, float val) { m_ShapeWidth[m_LightEntities[entity.entityIndex].dataIndex] = val; }
+        public void UpdateShapeHeight(in HDLightEntity entity, float val) { m_ShapeHeight[m_LightEntities[entity.entityIndex].dataIndex] = val; }
+        public void UpdateAspectRatio(in HDLightEntity entity, float val) { m_AspectRatio[m_LightEntities[entity.entityIndex].dataIndex] = val; }
+        public void UpdateInnerSpotPercent(in HDLightEntity entity, float val) { m_InnerSpotPercent[m_LightEntities[entity.entityIndex].dataIndex] = val; }
+        public void UpdateSpotIESCutoffPercent(in HDLightEntity entity, float val) { m_SpotIESCutoffPercent[m_LightEntities[entity.entityIndex].dataIndex] = val; }
+        public void UpdateShapeRadius(in HDLightEntity entity, float val) { m_ShapeRadius[m_LightEntities[entity.entityIndex].dataIndex] = val; }
+        public void UpdateBarnDoorLength(in HDLightEntity entity, float val) { m_BarnDoorLength[m_LightEntities[entity.entityIndex].dataIndex] = val; }
+        public void UpdateBarnDoorAngle(in HDLightEntity entity, float val) { m_BarnDoorAngle[m_LightEntities[entity.entityIndex].dataIndex] = val; }
         public void UpdateShadowFadeDistance(in HDLightEntity entity, float val) { m_ShadowFadeDistance[m_LightEntities[entity.entityIndex].dataIndex] = val; }
         public void UpdateVolumetricShadowDimmer(in HDLightEntity entity, float val) { m_VolumetricShadowDimmer[m_LightEntities[entity.entityIndex].dataIndex] = val; }
         public void UpdateAffectDiffuse(in HDLightEntity entity, bool val) { m_AffectDiffuse[m_LightEntities[entity.entityIndex].dataIndex] = val; }
         public void UpdateAffectSpecular(in HDLightEntity entity, bool val) { m_AffectSpecular[m_LightEntities[entity.entityIndex].dataIndex] = val; }
+        public void UpdateApplyRangeAttenuation(in HDLightEntity entity, bool val) { m_ApplyRangeAttenuation[m_LightEntities[entity.entityIndex].dataIndex] = val; }
+        public void UpdateShadowTint(in HDLightEntity entity, in Color val) { m_ShadowTint[m_LightEntities[entity.entityIndex].dataIndex] = val;  }
 
         #endregion
 
