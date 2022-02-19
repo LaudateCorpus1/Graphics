@@ -2,15 +2,12 @@
 
 using System.Collections.Generic;
 using UnityEditor;
-using UnityEngine.SceneManagement;
-using UnityEngine;
-using UnityEngine.Rendering;
-using UnityEngine.Experimental.Rendering;
 using System.Linq;
 using UnityEngine.Profiling;
 using System;
+using UnityEngine.Experimental.Rendering;
 
-namespace UnityEngine.Experimental.Rendering
+namespace UnityEngine.Rendering
 {
     using Brick = ProbeBrickIndex.Brick;
 
@@ -32,7 +29,6 @@ namespace UnityEngine.Experimental.Rendering
             public int minControllerSubdivLevel;
             public int maxControllerSubdivLevel;
             public int maxSubdivLevelInsideVolume;
-            public float geometryDistanceOffset;
         }
 
         public class GPUSubdivisionContext : IDisposable
@@ -277,7 +273,7 @@ namespace UnityEngine.Experimental.Rendering
                         // In case there is at least one brick in the sub-cell, we need to spawn the parent brick.
                         if (brickCount != brickSet.Count)
                         {
-                            float minBrickSize = subdivisionCtx.refVolume.profile.minBrickSize;
+                            float minBrickSize = subdivisionCtx.profile.minBrickSize;
                             Vector3 cellID = (cellAABB.center - cellAABB.extents) / minBrickSize;
                             float parentSubdivLevel = 3.0f;
                             for (int i = k_MaxSubdivisionInSubCell; i < ctx.maxSubdivisionLevel; i++)
@@ -350,7 +346,7 @@ namespace UnityEngine.Experimental.Rendering
             List<(Terrain terrain, ProbeReferenceVolume.Volume volume)> terrains, HashSet<Brick> brickSet)
         {
             var cellAABB = cellVolume.CalculateAABB();
-            float minBrickSize = subdivisionCtx.refVolume.profile.minBrickSize;
+            float minBrickSize = subdivisionCtx.profile.minBrickSize;
 
             cellVolume.CalculateCenterAndSize(out var center, out var _);
             var cmd = CommandBufferPool.Get($"Subdivide (Sub)Cell {center}");
@@ -377,7 +373,7 @@ namespace UnityEngine.Experimental.Rendering
             VoxelizeProbeVolumeData(cmd, cellAABB, probeVolumes, ctx);
 
             // Find the maximum subdivision level we can have in this cell (avoid extra work if not needed)
-            int startSubdivisionLevel = ctx.maxSubdivisionLevelInSubCell - GetMaxSubdivision(ctx, probeVolumes.Max(p => p.component.maxSubdivisionMultiplier));
+            int startSubdivisionLevel = Mathf.Max(0, ctx.maxSubdivisionLevelInSubCell - GetMaxSubdivision(ctx, probeVolumes.Max(p => p.component.GetMaxSubdivMultiplier())));
             for (int subdivisionLevel = startSubdivisionLevel; subdivisionLevel <= ctx.maxSubdivisionLevelInSubCell; subdivisionLevel++)
             {
                 // Add the bricks from the probe volume min subdivision level:
@@ -416,6 +412,8 @@ namespace UnityEngine.Experimental.Rendering
 
             cmd.WaitAllAsyncReadbackRequests();
             Graphics.ExecuteCommandBuffer(cmd);
+            cmd.Clear();
+            CommandBufferPool.Release(cmd);
         }
 
         static bool RastersizeGeometry(CommandBuffer cmd, ProbeReferenceVolume.Volume cellVolume, GPUSubdivisionContext ctx,
@@ -470,11 +468,11 @@ namespace UnityEngine.Experimental.Rendering
                                 for (int submesh = 0; submesh < meshFilter.sharedMesh.subMeshCount; submesh++)
                                 {
                                     props.SetInt(_AxisSwizzle, 0);
-                                    cmd.DrawMesh(meshFilter.sharedMesh, renderer.transform.localToWorldMatrix, voxelizeMaterial, submesh, shaderPass: 0, props);
+                                    cmd.DrawMesh(meshFilter.sharedMesh, renderer.transform.localToWorldMatrix, voxelizeMaterial, submesh, shaderPass: 1, props);
                                     props.SetInt(_AxisSwizzle, 1);
-                                    cmd.DrawMesh(meshFilter.sharedMesh, renderer.transform.localToWorldMatrix, voxelizeMaterial, submesh, shaderPass: 0, props);
+                                    cmd.DrawMesh(meshFilter.sharedMesh, renderer.transform.localToWorldMatrix, voxelizeMaterial, submesh, shaderPass: 1, props);
                                     props.SetInt(_AxisSwizzle, 2);
-                                    cmd.DrawMesh(meshFilter.sharedMesh, renderer.transform.localToWorldMatrix, voxelizeMaterial, submesh, shaderPass: 0, props);
+                                    cmd.DrawMesh(meshFilter.sharedMesh, renderer.transform.localToWorldMatrix, voxelizeMaterial, submesh, shaderPass: 1, props);
                                 }
                             }
                         }
@@ -499,11 +497,11 @@ namespace UnityEngine.Experimental.Rendering
 
                         int terrainTileCount = terrainData.heightmapResolution * terrainData.heightmapResolution;
                         props.SetInt(_AxisSwizzle, 0);
-                        cmd.DrawProcedural(transform, voxelizeMaterial, shaderPass: 1, MeshTopology.Quads, 4 * terrainTileCount, 1, props);
+                        cmd.DrawProcedural(transform, voxelizeMaterial, shaderPass: 0, MeshTopology.Quads, 4 * terrainTileCount, 1, props);
                         props.SetInt(_AxisSwizzle, 1);
-                        cmd.DrawProcedural(transform, voxelizeMaterial, shaderPass: 1, MeshTopology.Quads, 4 * terrainTileCount, 1, props);
+                        cmd.DrawProcedural(transform, voxelizeMaterial, shaderPass: 0, MeshTopology.Quads, 4 * terrainTileCount, 1, props);
                         props.SetInt(_AxisSwizzle, 2);
-                        cmd.DrawProcedural(transform, voxelizeMaterial, shaderPass: 1, MeshTopology.Quads, 4 * terrainTileCount, 1, props);
+                        cmd.DrawProcedural(transform, voxelizeMaterial, shaderPass: 0, MeshTopology.Quads, 4 * terrainTileCount, 1, props);
                     }
                 }
             }
@@ -596,8 +594,8 @@ namespace UnityEngine.Experimental.Rendering
                 // Prepare list of GPU probe volumes
                 foreach (var kp in probeVolumes)
                 {
-                    int minSubdiv = GetMaxSubdivision(ctx, kp.component.minSubdivisionMultiplier);
-                    int maxSubdiv = GetMaxSubdivision(ctx, kp.component.maxSubdivisionMultiplier);
+                    int minSubdiv = GetMaxSubdivision(ctx, kp.component.GetMinSubdivMultiplier());
+                    int maxSubdiv = GetMaxSubdivision(ctx, kp.component.GetMaxSubdivMultiplier());
 
                     // Constrain the probe volume AABB inside the cell
                     var pvAABB = kp.volume.CalculateAABB();
@@ -607,8 +605,9 @@ namespace UnityEngine.Experimental.Rendering
                     // Compute the max size of a brick that can fit in the smallest dimension of a probe volume
                     float minSizedDim = Mathf.Min(pvAABB.size.x, Mathf.Min(pvAABB.size.y, pvAABB.size.z));
                     float minSideInBricks = Mathf.CeilToInt(minSizedDim / ProbeReferenceVolume.instance.MinBrickSize());
+                    int absoluteMaxSubdiv = ProbeReferenceVolume.instance.GetMaxSubdivision() - 1;
+                    minSideInBricks =  Mathf.Max(minSideInBricks, Mathf.Pow(3, absoluteMaxSubdiv - maxSubdiv));
                     int subdivLevel = Mathf.FloorToInt(Mathf.Log(minSideInBricks, 3));
-
                     gpuProbeVolumes.Add(new GPUProbeVolumeOBB
                     {
                         corner = kp.volume.corner,
@@ -618,7 +617,6 @@ namespace UnityEngine.Experimental.Rendering
                         minControllerSubdivLevel = minSubdiv,
                         maxControllerSubdivLevel = maxSubdiv,
                         maxSubdivLevelInsideVolume = subdivLevel,
-                        geometryDistanceOffset = kp.component.geometryDistanceOffset,
                     });
                 }
 

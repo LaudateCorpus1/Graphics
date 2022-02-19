@@ -37,6 +37,7 @@ namespace UnityEngine.Rendering.HighDefinition
         public const int RenderingDecalLayersMask = 0x0000FF00;
         public const int RenderingDecalLayersMaskShift = 8;
         public const int DefaultRenderingLayerMask = 0x0101;
+        public const int DefaultDecalLayers = RenderingDecalLayersMask >> RenderingDecalLayersMaskShift;
 
         // TODO: put commonly used vars together (below), and then sort them by the frequency of use (descending).
         // Note: a matrix is 4 * 4 * 4 = 64 bytes (1x cache line), so no need to sort those.
@@ -130,7 +131,7 @@ namespace UnityEngine.Rendering.HighDefinition
         public float _FogColorMode;
         public float _GlobalMipBias;
         public float _GlobalMipBiasPow2;
-        public float _Pad2;
+        public float _Pad0;
         public Vector4 _MipFogParameters;
         public Vector4 _HeightFogBaseScattering;
         public float _HeightFogBaseExtinction;
@@ -138,8 +139,8 @@ namespace UnityEngine.Rendering.HighDefinition
         public float _GlobalFogAnisotropy;
         public int _VolumetricFilteringEnabled;
         public Vector2 _HeightFogExponents; // { 1/H, H }
-        public float _Pad4;
-        public float _Pad5;
+        public int _FogDirectionalOnly;
+        public float _Pad1;
 
         // VBuffer
         public Vector4 _VBufferViewportSize;           // { w, h, 1/w, 1/h }
@@ -198,7 +199,7 @@ namespace UnityEngine.Rendering.HighDefinition
         public float _MicroShadowOpacity;
         public uint _EnableProbeVolumes;
         public uint _ProbeVolumeCount;
-        public float _Pad6;
+        public float _SlopeScaleDepthBias;
 
         public Vector4 _CookieAtlasSize;
         public Vector4 _CookieAtlasData;
@@ -218,7 +219,7 @@ namespace UnityEngine.Rendering.HighDefinition
         public uint _NumTileClusteredX;
         public uint _NumTileClusteredY;
         public int _EnvSliceSize;
-        public float _Pad7;
+        public uint _EnableDecalLayers;
 
         // Subsurface scattering
         // Use float4 to avoid any packing issue between compute and pixel shaders
@@ -256,25 +257,10 @@ namespace UnityEngine.Rendering.HighDefinition
         public int _RaytracingFrameIndex;  // Index of the current frame [0, 7]
         public uint _EnableRecursiveRayTracing;
 
-        // Probe Volumes
-        public Vector4 _ProbeVolumeAtlasResolutionAndSliceCount;
-        public Vector4 _ProbeVolumeAtlasResolutionAndSliceCountInverse;
-        public Vector4 _ProbeVolumeAtlasOctahedralDepthResolutionAndInverse;
-
-        public int _ProbeVolumeLeakMitigationMode;
-        public float _ProbeVolumeBilateralFilterWeightMin;
-        public float _ProbeVolumeBilateralFilterWeight;
-        public uint _EnableDecalLayers;
-
-        [HLSLArray(7, typeof(Vector4))]
-        public fixed float _ProbeVolumeAmbientProbeFallbackPackedCoeffs[7 * 4]; // 3 bands of SH, packed for storing global ambient probe lighting as fallback to probe volumes.
-
         public int _TransparentCameraOnlyMotionVectors;
-
         // Can be set to 0 to globally "disable" tessellation
         // Because the DepthPrepass doesn't have a DEBUG_DISPLAY variant, it is the only way to disable it for debug modes
         public float _GlobalTessellationFactorMultiplier;
-
         public float _SpecularOcclusionBlend;
         public float _DeExposureMultiplier;
     }

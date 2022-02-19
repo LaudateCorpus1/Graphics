@@ -241,7 +241,8 @@ namespace UnityEditor.Rendering.HighDefinition
                 new LightingExplorerTableColumn(LightingExplorerTableColumn.DataType.Checkbox, HDStyles.ColorTemperatureMode, "m_UseColorTemperature", 150),        // 6: Color Temperature Mode
                 new LightingExplorerTableColumn(LightingExplorerTableColumn.DataType.Float, HDStyles.ColorTemperature, "m_ColorTemperature", 120, (r, prop, dep) => // 7: Color Temperature
                 {
-                    using (new EditorGUI.DisabledScope(!prop.serializedObject.FindProperty("m_UseColorTemperature").boolValue))
+                    // Sometimes during scene transition, the target object can be null, causing exceptions.
+                    using (new EditorGUI.DisabledScope(prop.serializedObject.targetObject == null || !prop.serializedObject.FindProperty("m_UseColorTemperature").boolValue))
                     {
                         EditorGUI.PropertyField(r, prop, GUIContent.none);
                     }
@@ -515,7 +516,6 @@ namespace UnityEditor.Rendering.HighDefinition
                         if (!TryGetAdditionalLightData(target, out var tLightData) || !TryGetAdditionalLightData(source, out var sLightData))
                             return;
 
-                        var hdrp = GraphicsSettings.currentRenderPipeline as HDRenderPipelineAsset;
                         var tShadowResolution = tLightData.shadowResolution;
                         var sShadowResolution = sLightData.shadowResolution;
 
@@ -581,6 +581,10 @@ namespace UnityEditor.Rendering.HighDefinition
                         {
                             Undo.RecordObject(lightData, "Changed contact shadow override");
                             useContactShadow.@override = overrideUseContactShadows;
+
+                            //SceneView don't update when interacting with Light Explorer when playing and pausing (1354129)
+                            if (EditorApplication.isPlaying && EditorApplication.isPaused)
+                                SceneView.RepaintAll();
                         }
                     }
                     else
@@ -640,6 +644,10 @@ namespace UnityEditor.Rendering.HighDefinition
                     {
                         Undo.RecordObject(lightData, "Changed affects diffuse");
                         lightData.affectDiffuse = affectDiffuse;
+
+                        //SceneView don't update when interacting with Light Explorer when playing and pausing (1354129)
+                        if (EditorApplication.isPlaying && EditorApplication.isPaused)
+                            SceneView.RepaintAll();
                     }
                 }, (lprop, rprop) =>
                     {
@@ -674,6 +682,10 @@ namespace UnityEditor.Rendering.HighDefinition
                     {
                         Undo.RecordObject(lightData, "Changed affects specular");
                         lightData.affectSpecular = affectSpecular;
+
+                        //SceneView don't update when interacting with Light Explorer when playing and pausing (1354129)
+                        if (EditorApplication.isPlaying && EditorApplication.isPaused)
+                            SceneView.RepaintAll();
                     }
                 }, (lprop, rprop) =>
                     {
@@ -828,7 +840,7 @@ namespace UnityEditor.Rendering.HighDefinition
             {
                 new LightingExplorerTableColumn(LightingExplorerTableColumn.DataType.Checkbox, HDStyles.Enabled, "m_Enabled", 60),                                      // 0: Enabled
                 new LightingExplorerTableColumn(LightingExplorerTableColumn.DataType.Name, HDStyles.Name, null, 200),                                                   // 1: Name
-                new LightingExplorerTableColumn(LightingExplorerTableColumn.DataType.Enum, HDStyles.VolumeMode, "isGlobal", 75, (r, prop, dep) =>                     // 2: Is Global
+                new LightingExplorerTableColumn(LightingExplorerTableColumn.DataType.Enum, HDStyles.VolumeMode, "m_IsGlobal", 75, (r, prop, dep) =>                       // 2: Is Global
                 {
                     if (!TryGetAdditionalVolumeData(prop, out var volumeData))
                     {

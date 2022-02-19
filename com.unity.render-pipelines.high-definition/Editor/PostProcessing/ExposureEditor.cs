@@ -1,10 +1,9 @@
-using UnityEditor.Rendering;
 using UnityEngine;
 using UnityEngine.Rendering.HighDefinition;
 
 namespace UnityEditor.Rendering.HighDefinition
 {
-    [VolumeComponentEditor(typeof(Exposure))]
+    [CustomEditor(typeof(Exposure))]
     sealed class ExposureEditor : VolumeComponentEditor
     {
         SerializedDataParameter m_Mode;
@@ -37,7 +36,7 @@ namespace UnityEditor.Rendering.HighDefinition
 
         SerializedDataParameter m_TargetMidGray;
 
-        private static LightUnitSliderUIDrawer k_LightUnitSlider;
+        private static HDLightUnitSliderUIDrawer k_LightUnitSlider;
 
         int m_RepaintsAfterChange = 0;
         int m_SettingsForDoubleRefreshHash = 0;
@@ -76,7 +75,7 @@ namespace UnityEditor.Rendering.HighDefinition
 
             m_TargetMidGray = Unpack(o.Find(x => x.targetMidGray));
 
-            k_LightUnitSlider = new LightUnitSliderUIDrawer();
+            k_LightUnitSlider = new HDLightUnitSliderUIDrawer();
         }
 
         public override void OnInspectorGUI()

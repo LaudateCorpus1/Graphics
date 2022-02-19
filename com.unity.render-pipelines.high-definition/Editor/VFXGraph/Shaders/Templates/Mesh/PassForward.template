@@ -12,6 +12,7 @@ Pass
 	${VFXHDRPForwardDefines}
 	#pragma multi_compile USE_FPTL_LIGHTLIST USE_CLUSTERED_LIGHTLIST
 	#pragma multi_compile SHADOW_LOW SHADOW_MEDIUM SHADOW_HIGH
+    #pragma multi_compile PROBE_VOLUMES_OFF PROBE_VOLUMES_L1 PROBE_VOLUMES_L2
 	#pragma multi_compile _ DEBUG_DISPLAY
 	//#pragma enable_d3d11_debug_symbols
 	
@@ -62,8 +63,7 @@ Pass
 		#endif
 		
 		#if VFX_FEATURE_MOTION_VECTORS_FORWARD
-		float4 cPosPrevious : TEXCOORD6;
-		float4 cPosNonJiterred : TEXCOORD7;
+		VFX_DECLARE_MOTION_VECTORS_STORAGE(6,7)
 		#endif
 
 		float3 posWS : TEXCOORD8; // Needed for fog
@@ -94,8 +94,8 @@ ${VFXHDRPLitVaryingsMacros}
 #define VFX_VARYING_POSWS posWS
 
 #if VFX_FEATURE_MOTION_VECTORS_FORWARD
-#define VFX_VARYING_VELOCITY_CPOS cPosNonJiterred
-#define VFX_VARYING_VELOCITY_CPOS_PREVIOUS cPosPrevious
+#define VFX_VARYING_VELOCITY_CPOS VFX_DECLARE_MOTION_VECTORS_VARYING_NONJITTER
+#define VFX_VARYING_VELOCITY_CPOS_PREVIOUS VFX_DECLARE_MOTION_VECTORS_VARYING_PREVIOUS
 #endif
 
 ${VFXBegin:VFXVertexAdditionalProcess}

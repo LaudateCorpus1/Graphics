@@ -15,8 +15,12 @@ namespace UnityEditor.Rendering.Universal
         public SerializedProperty storeActionsOptimizationProperty { get; }
 
         public SerializedProperty hdr { get; }
+        public SerializedProperty hdrColorBufferPrecisionProp { get; }
         public SerializedProperty msaa { get; }
         public SerializedProperty renderScale { get; }
+        public SerializedProperty upscalingFilter { get; }
+        public SerializedProperty fsrOverrideSharpness { get; }
+        public SerializedProperty fsrSharpness { get; }
 
         public SerializedProperty mainLightRenderingModeProp { get; }
         public SerializedProperty mainLightShadowsSupportedProp { get; }
@@ -45,8 +49,8 @@ namespace UnityEditor.Rendering.Universal
         public SerializedProperty shadowCascadeBorderProp { get; }
         public SerializedProperty shadowDepthBiasProp { get; }
         public SerializedProperty shadowNormalBiasProp { get; }
-
         public SerializedProperty softShadowsSupportedProp { get; }
+        public SerializedProperty conservativeEnclosingSphereProp { get; }
 
         public SerializedProperty srpBatcher { get; }
         public SerializedProperty supportsDynamicBatching { get; }
@@ -54,15 +58,15 @@ namespace UnityEditor.Rendering.Universal
         public SerializedProperty supportsLightLayers { get; }
         public SerializedProperty debugLevelProp { get; }
 
-        public SerializedProperty shaderVariantLogLevel { get; }
         public SerializedProperty volumeFrameworkUpdateModeProp { get; }
 
         public SerializedProperty colorGradingMode { get; }
         public SerializedProperty colorGradingLutSize { get; }
         public SerializedProperty useFastSRGBLinearConversion { get; }
 
+#if ADAPTIVE_PERFORMANCE_2_0_0_OR_NEWER
         public SerializedProperty useAdaptivePerformance { get; }
-
+#endif
         public UniversalRenderPipelineAsset asset { get; }
         public SerializedObject serializedObject { get; }
 
@@ -79,8 +83,12 @@ namespace UnityEditor.Rendering.Universal
             supportsTerrainHolesProp = serializedObject.FindProperty("m_SupportsTerrainHoles");
 
             hdr = serializedObject.FindProperty("m_SupportsHDR");
+            hdrColorBufferPrecisionProp = serializedObject.FindProperty("m_HDRColorBufferPrecision");
             msaa = serializedObject.FindProperty("m_MSAA");
             renderScale = serializedObject.FindProperty("m_RenderScale");
+            upscalingFilter = serializedObject.FindProperty("m_UpscalingFilter");
+            fsrOverrideSharpness = serializedObject.FindProperty("m_FsrOverrideSharpness");
+            fsrSharpness = serializedObject.FindProperty("m_FsrSharpness");
 
             mainLightRenderingModeProp = serializedObject.FindProperty("m_MainLightRenderingMode");
             mainLightShadowsSupportedProp = serializedObject.FindProperty("m_MainLightShadowsSupported");
@@ -111,6 +119,7 @@ namespace UnityEditor.Rendering.Universal
             shadowDepthBiasProp = serializedObject.FindProperty("m_ShadowDepthBias");
             shadowNormalBiasProp = serializedObject.FindProperty("m_ShadowNormalBias");
             softShadowsSupportedProp = serializedObject.FindProperty("m_SoftShadowsSupported");
+            conservativeEnclosingSphereProp = serializedObject.FindProperty("m_ConservativeEnclosingSphere");
 
             srpBatcher = serializedObject.FindProperty("m_UseSRPBatcher");
             supportsDynamicBatching = serializedObject.FindProperty("m_SupportsDynamicBatching");
@@ -118,7 +127,6 @@ namespace UnityEditor.Rendering.Universal
             supportsLightLayers = serializedObject.FindProperty("m_SupportsLightLayers");
             debugLevelProp = serializedObject.FindProperty("m_DebugLevel");
 
-            shaderVariantLogLevel = serializedObject.FindProperty("m_ShaderVariantLogLevel");
             volumeFrameworkUpdateModeProp = serializedObject.FindProperty("m_VolumeFrameworkUpdateMode");
 
             storeActionsOptimizationProperty = serializedObject.FindProperty("m_StoreActionsOptimization");
@@ -128,8 +136,9 @@ namespace UnityEditor.Rendering.Universal
 
             useFastSRGBLinearConversion = serializedObject.FindProperty("m_UseFastSRGBLinearConversion");
 
+#if ADAPTIVE_PERFORMANCE_2_0_0_OR_NEWER
             useAdaptivePerformance = serializedObject.FindProperty("m_UseAdaptivePerformance");
-
+#endif
             string Key = "Universal_Shadow_Setting_Unit:UI_State";
             state = new EditorPrefBoolFlags<EditorUtils.Unit>(Key);
         }

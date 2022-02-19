@@ -28,10 +28,9 @@ namespace UnityEditor
         /// Checks whether the custom editor tool is available based on the state of the editor.
         /// </summary>
         /// <returns>Always return true</returns>
-        public override bool IsAvailable()
-        {
-            return true;
-        }
+        // (case 1396843) The availability is checked only when a component gains focus. So if the tool availability
+        //   while the focus is the same, the change won't be propagated to the toolbar, which can be very confusing.
+        public override bool IsAvailable() => true;
 
         /// <summary>
         /// Use this method to implement a custom editor tool.
@@ -39,10 +38,16 @@ namespace UnityEditor
         /// <param name="window">The window that is displaying the custom editor tool.</param>
         public override void OnToolGUI(EditorWindow window)
         {
-            if (target == null)
+            if (target is not LightAnchor l)
                 return;
 
-            DoTargetGUI(target);
+            // (case 1396843) When the anchor override is assigned, the handle must not modify the overriden transform
+            //  so still display it to avoid confusion, but keep it disabled.
+            var isHandleEnabled = l.anchorPositionOverride == null;
+            using (new EditorGUI.DisabledScope(!isHandleEnabled))
+            {
+                DoTargetGUI(target);
+            }
         }
 
         void OnEnable()
@@ -112,7 +117,7 @@ namespace UnityEditor
             LightAnchorHandles handles;
             if (!m_LightAnchorHandles.TryGetValue(obj, out handles))
             {
-                handles = new LightAnchorHandles();
+                handles = new LightAnchorHandles(obj as LightAnchor);
                 m_LightAnchorHandles.Add(obj, handles);
             }
 

@@ -31,6 +31,8 @@ namespace UnityEngine.Rendering.Universal
 
         private enum LightCookieShaderFormat
         {
+            None = -1,
+
             RGB = 0,
             Alpha = 1,
             Red = 2
@@ -53,7 +55,7 @@ namespace UnityEngine.Rendering.Universal
             public float cubeOctahedralSizeScale;  // Cube octahedral projection size scale.
             public bool useStructuredBuffer;       // RenderingUtils.useStructuredBuffer
 
-            public static Settings GetDefault()
+            public static Settings Create()
             {
                 Settings s;
                 s.atlas.resolution = new Vector2Int(1024, 1024);
@@ -580,12 +582,20 @@ namespace UnityEngine.Rendering.Universal
                 cmd.SetGlobalMatrix(ShaderProperty.mainLightWorldToLight, cookieMatrix);
                 cmd.SetGlobalFloat(ShaderProperty.mainLightCookieTextureFormat, cookieFormat);
             }
+            else
+            {
+                // Make sure we erase stale data in case the main light is disabled but cookie system is enabled (for additional lights).
+                cmd.SetGlobalTexture(ShaderProperty.mainLightTexture, Texture2D.whiteTexture);
+                cmd.SetGlobalMatrix(ShaderProperty.mainLightWorldToLight, Matrix4x4.identity);
+                cmd.SetGlobalFloat(ShaderProperty.mainLightCookieTextureFormat, (float)LightCookieShaderFormat.None);
+            }
 
             return isMainLightCookieEnabled;
         }
 
         private LightCookieShaderFormat GetLightCookieShaderFormat(GraphicsFormat cookieFormat)
         {
+            // TODO: convert this to use GraphicsFormatUtility
             switch (cookieFormat)
             {
                 default:
@@ -607,6 +617,10 @@ namespace UnityEngine.Rendering.Universal
                 case GraphicsFormat.R32_UInt:
                 case GraphicsFormat.R32_SInt:
                 case GraphicsFormat.R32_SFloat:
+                case GraphicsFormat.R_BC4_SNorm:
+                case GraphicsFormat.R_BC4_UNorm:
+                case GraphicsFormat.R_EAC_SNorm:
+                case GraphicsFormat.R_EAC_UNorm:
                     return LightCookieShaderFormat.Red;
             }
         }

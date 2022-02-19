@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -15,7 +16,7 @@ namespace UnityEngine.Rendering.HighDefinition
 
         RequiresDeferredLighting = (1 << 1),
         SubsurfaceScattering = (1 << 2),     //  SSS, Split Lighting
-        TraceReflectionRay = (1 << 3),     //  SSR or RTR
+        TraceReflectionRay = (1 << 3),     //  SSR or RTR - slot is reuse in transparent
         Decals = (1 << 4),     //  Use to tag when an Opaque Decal is render into DBuffer
         ObjectMotionVector = (1 << 5),     //  Animated object (for motion blur, SSR, SSAO, TAA)
 
@@ -25,6 +26,8 @@ namespace UnityEngine.Rendering.HighDefinition
         ExcludeFromTAA = (1 << 1),    // Disable Temporal Antialiasing for certain objects
         DistortionVectors = (1 << 2),    // Distortion pass - reset after distortion pass, shared with SMAA
         SMAA = (1 << 2),    // Subpixel Morphological Antialiasing
+        // Reserved TraceReflectionRay = (1 << 3) for transparent SSR or RTR
+        WaterSurface = (1 << 4), // Reserved for water surface usage
         AfterOpaqueReservedBits = 0x38,        // Reserved for future usage
 
         // --- Following are user bits, we don't touch them inside HDRP and is up to the user to handle them ---
@@ -51,11 +54,16 @@ namespace UnityEngine.Rendering.HighDefinition
     ///         Comp Always
     ///         Pass Replace
     /// </summary>
+    [Flags]
     public enum UserStencilUsage
     {
+        /// <summary>All stencil bits disabled.</summary>
+        None = 0,
         /// <summary>User stencil bit 0.</summary>
         UserBit0 = StencilUsage.UserBit0,
         /// <summary>User stencil bit 1.</summary>
-        UserBit1 = StencilUsage.UserBit1
+        UserBit1 = StencilUsage.UserBit1,
+        /// <summary>The mask of all the user bits.</summary>
+        AllUserBits = UserBit0 | UserBit1,
     }
 }

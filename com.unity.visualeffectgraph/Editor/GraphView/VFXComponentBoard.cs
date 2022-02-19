@@ -1,17 +1,16 @@
 using System;
-using UnityEditor.UIElements;
+using System.Linq;
+using System.Collections.Generic;
+using System.Globalization;
+using UnityEditor.Experimental;
 using UnityEditor.Experimental.GraphView;
+using UnityEditor.SceneManagement;
+
+using UnityEditor.VFX.UIElements;
 using UnityEngine;
 using UnityEngine.VFX;
 using UnityEngine.UIElements;
-using UnityEditor.VFX;
-using System.Collections.Generic;
-using UnityEditor;
-using System.Linq;
-using System.Text;
-using UnityEditor.SceneManagement;
-using System.Globalization;
-using System.Xml;
+
 using PositionType = UnityEngine.UIElements.Position;
 
 namespace UnityEditor.VFX.UI
@@ -157,19 +156,10 @@ namespace UnityEditor.VFX.UI
 
             contentContainer.AddStyleSheetPath("VFXComponentBoard");
 
-            m_AttachButton = this.Query<Button>("attach");
-            m_AttachButton.clickable.clicked += ToggleAttach;
-
-            m_SelectButton = this.Query<Button>("select");
-            m_SelectButton.clickable.clicked += Select;
-
-            m_ComponentPath = this.Query<Label>("component-path");
-
-            m_ComponentContainer = this.Query("component-container");
-            m_ComponentContainerParent = m_ComponentContainer.parent;
-
-            RegisterCallback<AttachToPanelEvent>(OnAttachToPanel);
-            RegisterCallback<DetachFromPanelEvent>(OnDetachToPanel);
+            m_RootElement = this.Query<VisualElement>("component-container");
+            m_SubtitleIcon = this.Query<Image>("subTitle-icon");
+            m_Subtitle = this.Query<Label>("subTitleLabel");
+            m_SubtitleIcon.image = EditorGUIUtility.LoadIcon(EditorResources.iconsPath + "console.warnicon.sml.png");
 
             m_Stop = this.Query<Button>("stop");
             m_Stop.clickable.clicked += EffectStop;
@@ -204,10 +194,11 @@ namespace UnityEditor.VFX.UI
             m_DebugModes = this.Query<Button>("debug-modes");
             m_DebugModes.clickable.clicked += OnDebugModes;
 
-            m_RecordBoundsButton = this.Query<Button>("record");
-            m_RecordBoundsImage = this.Query<Image>("record-icon");
-            m_RecordBoundsButton.clickable.clicked += OnRecordBoundsButton;
             m_RecordIcon = VFXView.LoadImage("d_Record");
+            m_RecordBoundsButton = this.Query<Button>("record");
+            m_RecordBoundsImage = m_RecordBoundsButton.Query<Image>("record-icon");
+            m_RecordBoundsImage.style.backgroundImage = m_RecordIcon;
+            m_RecordBoundsButton.clickable.clicked += OnRecordBoundsButton;
             m_BoundsActionLabel = this.Query<Label>("bounds-label");
             m_BoundsToolContainer = this.Query("bounds-tool-container");
             m_BackgroundDefaultColor = m_BoundsToolContainer.style.backgroundColor;
@@ -228,8 +219,6 @@ namespace UnityEditor.VFX.UI
 
             SetPosition(BoardPreferenceHelper.LoadPosition(BoardPreferenceHelper.Board.componentBoard, defaultRect));
         }
-
-        VisualElement m_ComponentContainerParent;
 
         public void ValidatePosition()
         {
@@ -366,13 +355,14 @@ namespace UnityEditor.VFX.UI
             if (m_BoundsRecorder != null)
             {
                 m_BoundsRecorder.isRecording = false;
+                m_BoundsRecorder.CleanUp();
                 m_BoundsRecorder = null;
             }
         }
 
         void UpdateBoundsRecorder()
         {
-            if (m_AttachedComponent != null)
+            if (m_AttachedComponent != null && m_View.controller.graph != null)
             {
                 controller.RecompileExpressionGraphIfNeeded();
                 bool wasRecording = false;
@@ -455,7 +445,6 @@ namespace UnityEditor.VFX.UI
 
         public void OnVisualEffectComponentChanged(IEnumerable<VisualEffect> visualEffects)
         {
-            OnSelectionChanged();
             if (m_AttachedComponent != null
                 && visualEffects.Contains(m_AttachedComponent)
                 && m_AttachedComponent.visualEffectAsset != controller.graph.visualEffectResource.asset)
@@ -465,39 +454,11 @@ namespace UnityEditor.VFX.UI
             }
         }
 
-        void OnAttachToPanel(AttachToPanelEvent e)
-        {
-            OnSelectionChanged();
-            Selection.selectionChanged += OnSelectionChanged;
-        }
-
-        void OnDetachToPanel(DetachFromPanelEvent e)
-        {
-            Selection.selectionChanged -= OnSelectionChanged;
-        }
-
-        VisualEffect m_SelectionCandidate;
-
         VisualEffect m_AttachedComponent;
 
         public VisualEffect GetAttachedComponent()
         {
             return m_AttachedComponent;
-        }
-
-        void OnSelectionChanged()
-        {
-            if (Selection.activeGameObject != null && controller != null)
-            {
-                m_SelectionCandidate = null;
-                m_SelectionCandidate = Selection.activeGameObject.GetComponent<VisualEffect>();
-                if (m_SelectionCandidate != null && m_SelectionCandidate.visualEffectAsset != controller.graph.visualEffectResource.asset)
-                {
-                    m_SelectionCandidate = null;
-                }
-            }
-
-            UpdateAttachButton();
         }
 
         bool m_LastKnownPauseState;
@@ -520,15 +481,12 @@ namespace UnityEditor.VFX.UI
             }
         }
 
-        void UpdateAttachButton()
-        {
-            m_AttachButton.SetEnabled(m_SelectionCandidate != null || m_AttachedComponent != null && controller != null);
-
-            m_AttachButton.text = m_AttachedComponent != null ? "Detach" : "Attach";
-        }
-
         public void Detach()
         {
+            m_RootElement.SetEnabled(false);
+            m_Subtitle.text = "Select a Game Object running this VFX";
+            m_SubtitleIcon.style.display = DisplayStyle.Flex;
+
             if (m_AttachedComponent != null)
             {
                 m_AttachedComponent.playRate = 1;
@@ -539,15 +497,13 @@ namespace UnityEditor.VFX.UI
             {
                 m_UpdateItem.Pause();
             }
-            m_ComponentContainer.RemoveFromHierarchy();
-            m_ComponentPath.text = "";
-            UpdateAttachButton();
             if (m_EventsContainer != null)
                 m_EventsContainer.Clear();
             m_Events.Clear();
-            m_SelectButton.visible = false;
             if (m_DebugUI != null)
-                m_DebugUI.Clear();
+            {
+                m_DebugUI.SetDebugMode(VFXUIDebug.Modes.None, this, true);
+            }
 
             DeleteBoundsRecorder();
             RefreshInitializeErrors();
@@ -571,25 +527,38 @@ namespace UnityEditor.VFX.UI
             }
         }
 
-        public void Attach(VisualEffect effect = null)
+        public void LockUI()
         {
-            VisualEffect target = effect != null ? effect : m_SelectionCandidate;
-            if (target != null)
+            m_BoundsToolContainer.SetEnabled(false);
+        }
+
+        public void UnlockUI()
+        {
+            m_BoundsToolContainer.SetEnabled(true);
+        }
+
+        public bool Attach(VisualEffect effect = null)
+        {
+            VisualEffect target = effect != null ? effect : Selection.activeGameObject?.GetComponent<VisualEffect>();
+            if (target != null && m_View.controller?.graph != null && m_AttachedComponent != target)
             {
-                m_SelectionCandidate = target; // allow reattaching if effet != null;
+                if (m_AttachedComponent != null)
+                {
+                    m_AttachedComponent.playRate = 1;
+                }
+
                 m_AttachedComponent = target;
-                UpdateAttachButton();
+                m_Subtitle.text = m_AttachedComponent.name;
                 m_LastKnownPauseState = !m_AttachedComponent.pause;
+                m_AttachedComponent.playRate = m_LastKnownPlayRate >= 0 ? m_LastKnownPlayRate : 1;
+
                 UpdatePlayButton();
 
                 if (m_UpdateItem == null)
                     m_UpdateItem = schedule.Execute(Update).Every(100);
                 else
                     m_UpdateItem.Resume();
-                if (m_ComponentContainer.parent == null)
-                    m_ComponentContainerParent.Add(m_ComponentContainer);
                 UpdateEventList();
-                m_SelectButton.visible = true;
 
                 var debugMode = VFXUIDebug.Modes.None;
                 if (m_DebugUI != null)
@@ -602,10 +571,16 @@ namespace UnityEditor.VFX.UI
                 m_DebugUI.SetVisualEffect(m_AttachedComponent);
                 m_DebugUI.SetDebugMode(debugMode, this, true);
 
+                m_RootElement.SetEnabled(true);
+                m_SubtitleIcon.style.display = DisplayStyle.None;
                 UpdateBoundsRecorder();
                 UpdateRecordingButton();
                 RefreshInitializeErrors();
+
+                return true;
             }
+
+            return false;
         }
 
         public void SendEvent(string name)
@@ -641,13 +616,13 @@ namespace UnityEditor.VFX.UI
                 current = current.parent;
             }
 
-            if (EditorSceneManager.loadedSceneCount > 1)
+            if (UnityEngine.SceneManagement.SceneManager.loadedSceneCount > 1)
             {
                 path = m_AttachedComponent.gameObject.scene.name + " : " + path;
             }
 
-            if (m_ComponentPath.text != path)
-                m_ComponentPath.text = path;
+            if (m_Subtitle.text != path)
+                m_Subtitle.text = path;
 
             if (m_ParticleCount != null)
             {
@@ -662,20 +637,24 @@ namespace UnityEditor.VFX.UI
             UpdatePlayRate();
             UpdatePlayButton();
             UpdateBoundsModes();
-            m_ApplyBoundsButton.SetEnabled(m_BoundsRecorder.bounds.Any() && m_View.IsAssetEditable());
             UpdateRecordingButton();
         }
 
         void UpdatePlayRate()
         {
-            if (m_LastKnownPlayRate != m_AttachedComponent.playRate)
+            if (Math.Abs(m_LastKnownPlayRate - m_AttachedComponent.playRate) > 1e-4)
             {
                 m_LastKnownPlayRate = m_AttachedComponent.playRate;
-                float playRateValue = m_AttachedComponent.playRate * VisualEffectControl.playRateToValue;
-                m_PlayRateSlider.value = Mathf.Pow(playRateValue, 1 / VisualEffectControl.sliderPower);
-                if (m_PlayRateField != null && !m_PlayRateField.HasFocus())
-                    m_PlayRateField.value = Mathf.RoundToInt(playRateValue);
+                SetPlayrateSlider(m_AttachedComponent.playRate);
             }
+        }
+
+        void SetPlayrateSlider(float value)
+        {
+            float playRateValue = value * VisualEffectControl.playRateToValue;
+            m_PlayRateSlider.value = Mathf.Pow(playRateValue, 1 / VisualEffectControl.sliderPower);
+            if (m_PlayRateField != null && !m_PlayRateField.HasFocus())
+                m_PlayRateField.value = Mathf.RoundToInt(playRateValue);
         }
 
         void ToggleAttach()
@@ -698,17 +677,15 @@ namespace UnityEditor.VFX.UI
             }
         }
 
-        Button m_AttachButton;
-        Button m_SelectButton;
-        Label m_ComponentPath;
-        VisualElement m_ComponentContainer;
         VisualElement m_EventsContainer;
+        VisualElement m_RootElement;
 
+        Label m_Subtitle;
+        Image m_SubtitleIcon;
         Button m_Stop;
         Button m_Play;
         Button m_Step;
         Button m_Restart;
-
         Slider m_PlayRateSlider;
         IntegerField m_PlayRateField;
 
@@ -747,28 +724,25 @@ namespace UnityEditor.VFX.UI
             return evt == VisualEffectAsset.PlayEventName || evt == VisualEffectAsset.StopEventName;
         }
 
-        IEnumerable<String> GetEventNames()
+        IEnumerable<string> GetEventNames()
         {
-            foreach (var context in controller.contexts.Select(t => t.model).OfType<VFXContext>())
-            {
-                foreach (var name in RecurseGetEventNames(context))
-                    yield return name;
-            }
+            return controller?.contexts.SelectMany(x => this.RecurseGetEventNames(x.model)) ?? Enumerable.Empty<string>();
         }
 
-        IEnumerable<String> RecurseGetEventNames(VFXContext context)
+        IEnumerable<string> RecurseGetEventNames(VFXContext context)
         {
-            if (context is VFXBasicEvent)
+            switch (context)
             {
-                if (!IsDefaultEvent(name))
-                    yield return (context as VFXBasicEvent).eventName;
-            }
-            else if (context is VFXSubgraphContext)
-            {
-                foreach (var subContext in (context as VFXSubgraphContext).subChildren.OfType<VFXContext>())
+                case VFXBasicEvent basicEvent when !IsDefaultEvent(name):
+                    yield return basicEvent.eventName;
+                    break;
+                case VFXSubgraphContext subgraphContext when subgraphContext.subChildren != null:
                 {
-                    foreach (var name in RecurseGetEventNames(subContext))
-                        yield return name;
+                    foreach (var eventName in subgraphContext.subChildren.OfType<VFXContext>().SelectMany(RecurseGetEventNames))
+                    {
+                        yield return eventName;
+                    }
+                    break;
                 }
             }
         }
@@ -812,6 +786,12 @@ namespace UnityEditor.VFX.UI
                     SortEventList();
                 }
             }
+        }
+
+        internal void ResetPlayRate()
+        {
+            m_LastKnownPlayRate = -1f;
+            SetPlayrateSlider(1f);
         }
 
         void SortEventList()
@@ -964,10 +944,7 @@ namespace UnityEditor.VFX.UI
             var initContextUI = m_BoundsRecorder.GetInitContextController(m_SystemName);
             m_SystemNameButton.Setup(initContextUI, m_BoundsRecorder.view);
             m_SystemNameButton.text = m_SystemName;
-            m_BoundsMode = this.Query<Button>("bounds-mode");
-            m_BoundsMode.AddStyleSheetPathWithSkinVariant("VFXControls");
-            m_BoundsMode.clickable.clicked += OnBoundsModeMenu;
-            m_BoundsMode.text = m_BoundsRecorder.GetSystemBoundsSettingMode(systemName).ToString();
+            InitBoundsModeElement();
             m_Colors = new Dictionary<string, StyleColor>()
             {
                 {"included", m_SystemNameButton.style.color},
@@ -984,23 +961,22 @@ namespace UnityEditor.VFX.UI
             }
         }
 
-        private List<string> m_BoundsModes = new List<string> { "Manual", "Recorded", "Automatic" };
-
-        void OnBoundsModeMenu()
+        void InitBoundsModeElement()
         {
-            GenericMenu menu = new GenericMenu();
-            foreach (var mode in Enum.GetValues(typeof(BoundsSettingMode)))
-            {
-                bool IsOn = (BoundsSettingMode)mode == m_CurrentMode;
-                menu.AddItem(BoundsSystemContents.modesContent[(BoundsSettingMode)mode], IsOn, SetSystemBoundMode, mode);
-            }
-            menu.DropDown(m_BoundsMode.worldBound);
+            m_BoundsMode = new VFXEnumField(s_EmptyEnumLabel, typeof(BoundsSettingMode));
+            m_BoundsMode.OnValueChanged += OnValueChanged;
+            m_BoundsMode.SetValue((int)m_CurrentMode);
+            m_BoundsMode.AddToClassList("bounds-mode");
+            Add(m_BoundsMode);
         }
+
+        private List<string> m_BoundsModes = new List<string> { "Manual", "Recorded", "Automatic" };
 
         public void UpdateLabel()
         {
             m_CurrentMode = m_BoundsRecorder.GetSystemBoundsSettingMode(m_SystemName);
-            m_BoundsMode.text = m_CurrentMode.ToString();
+            m_BoundsMode.SetValue((int)m_CurrentMode);
+            OnValueChanged();
             if (!m_BoundsRecorder.NeedsToBeRecorded(m_SystemName, out VFXBoundsRecorder.ExclusionCause cause))
             {
                 m_SystemNameButton.text = $"{m_SystemName} {VFXBoundsRecorder.exclusionCauseString[cause]}";
@@ -1026,8 +1002,17 @@ namespace UnityEditor.VFX.UI
         void SetSystemBoundMode(object mode)
         {
             m_CurrentMode = (BoundsSettingMode)mode;
-            m_BoundsMode.text = mode.ToString();
+            m_BoundsMode.SetValue((int)mode);
             m_BoundsRecorder.ModifyMode(m_SystemName, (BoundsSettingMode)mode);
+        }
+
+        void OnValueChanged()
+        {
+            if (m_CurrentMode != (BoundsSettingMode)m_BoundsMode.value)
+            {
+                m_CurrentMode = (BoundsSettingMode)m_BoundsMode.value;
+                m_BoundsRecorder.ModifyMode(m_SystemName, m_CurrentMode);
+            }
         }
 
         public void ReleaseBoundsRecorder()
@@ -1043,10 +1028,11 @@ namespace UnityEditor.VFX.UI
 
         string m_SystemName;
         VFXBoundsRecorderField m_SystemNameButton;
-        Button m_BoundsMode;
+        VFXEnumField m_BoundsMode;
         BoundsSettingMode m_CurrentMode;
         VFXBoundsRecorder m_BoundsRecorder;
         Dictionary<string, StyleColor> m_Colors;
+        private static Label s_EmptyEnumLabel = new Label();
 
         static class BoundsSystemContents
         {

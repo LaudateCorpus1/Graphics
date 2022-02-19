@@ -60,6 +60,21 @@ namespace UnityEditor.ShaderGraph
                     builder.AppendLine($"{hideTagString}[TextureStack.{referenceName}({layer})][NoScaleOffset]{layerRefName}(\"{layerName}\", 2D) = \"white\" {{}}");
                 }
             }
+            else
+            {
+                // For procedural VT, we only need to expose a single property, indicating the referenceName and the number of layers
+
+                // Adds a property as:
+                //   [ProceduralTextureStack.MyStack(1)] [NoScaleOffset] MyStack("Procedural Virtual Texture", 2D) = "white" {}
+                // or:
+                //   [GlobalProceduralTextureStack.MyStack(2)] [NoScaleOffset] MyStack("Procedural Virtual Texture", 2D) = "white" {}
+                string prefixString = value.shaderDeclaration == HLSLDeclaration.UnityPerMaterial
+                    ? "ProceduralTextureStack"
+                    : "GlobalProceduralTextureStack";
+
+                int numLayers = value.layers.Count;
+                builder.AppendLine($"{hideTagString}[{prefixString}.{referenceName}({numLayers})][NoScaleOffset]{referenceName}(\"{"Procedural Virtual Texture"}\", 2D) = \"white\" {{}}");
+            }
         }
 
         internal override string GetPropertyBlockString()
@@ -75,9 +90,7 @@ namespace UnityEditor.ShaderGraph
             int numLayers = value.layers.Count;
             if (numLayers > 0)
             {
-                HLSLDeclaration decl = HLSLDeclaration.UnityPerMaterial;
-                if (value.procedural)
-                    decl = GetDefaultHLSLDeclaration();
+                HLSLDeclaration decl = (value.procedural) ? value.shaderDeclaration : HLSLDeclaration.UnityPerMaterial;
 
                 action(new HLSLProperty(HLSLType._CUSTOM, referenceName + "_CBDecl", decl, concretePrecision)
                 {
@@ -93,7 +106,7 @@ namespace UnityEditor.ShaderGraph
 
                 if (!value.procedural)
                 {
-                    // declare regular texture properties (for fallback case)
+                    //declare regular texture properties (for fallback case)
                     for (int i = 0; i < numLayers; i++)
                     {
                         string layerRefName = value.layers[i].layerRefName;
@@ -206,7 +219,7 @@ namespace UnityEditor.ShaderGraph
 
         public override void OnAfterDeserialize(string json)
         {
-            // VT shader properties must always be exposed
+            // VT shader properties must be exposed so they can be picked up by the native-side VT system
             generatePropertyBlock = true;
         }
     }
